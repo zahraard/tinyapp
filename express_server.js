@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-const { emailLookup, generateRandomString } = require('./views/helpers/helpers')
+const { lookupUserByEmail, emailLookup, generateRandomString } = require('./views/helpers/helpers')
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -81,21 +81,32 @@ app.post('/urls/:shortURL', (req, res)=>{
       urlDatabase[shortURL] = req.body.newURL
     ]
   }
-  //console.log('url: ',urlDatabase)
   res.redirect('/urls');
 })
 
 app.post(('/urls/:shortURL/delete'), (req, res)=>{
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
-  //console.log('url: ',urlDatabase)
   res.redirect('/urls');
 })
 
-app.post('/login', (req, res)=>{
-  const username = req.body.username;
+app.get('/login', (req, res)=>{
+  res.render("urls_login");
+})
 
-  //res.cookie('username', username);
+app.post('/login', (req, res)=>{
+  const { email, password } = req.body;
+  if(email === '' || password === ''){
+    return res.status(400).send('Fields Are Required!');
+  }
+  const user = lookupUserByEmail(users, email);
+  if(!user){
+    return res.status(403).send('Email Not Found!');
+  }
+  if(user.password !== password){
+    return res.status(403).send('Wrong Password!');
+  }
+  res.cookie('user_id', user.id);
   res.redirect('/urls')
 })
 
@@ -105,11 +116,11 @@ app.post('/logout', (req, res)=>{
 })
 
 app.get('/register', (req, res)=>{
-  const userId = req.cookies['user_id']
-  let templateVars = { 
-    user: users[userId]
-     };
-  res.render('urls_register', templateVars);
+  // const userId = req.cookies['user_id']
+  // let templateVars = { 
+  //   user: users[userId]
+  //    };
+  res.render('urls_register');
 });
 
 

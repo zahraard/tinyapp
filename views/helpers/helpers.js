@@ -12,7 +12,16 @@ function generateRandomString() {
   return rand;
 }
 
+function lookupUserByEmail(users, email){
+  for(let item in users){
+    if( users[item].email === email){
+      return users[item];
+    }
+  }
+}
+
 module.exports = {
   emailLookup,
-  generateRandomString
+  generateRandomString,
+  lookupUserByEmail
 }
