@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const { emailLookup, generateRandomString } = require('./views/helpers/helpers')
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -35,7 +36,7 @@ app.get('/urls', (req, res)=>{
     urls: urlDatabase,
     user: users[userId]
   };
-  console.log(templateVars)
+  //console.log(templateVars)
   res.render("urls_index", templateVars)
 })
 
@@ -68,7 +69,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   const generatedUrl = generateRandomString();
   urlDatabase[generatedUrl] = req.body.longURL;  
-  console.log(urlDatabase);  // Log the POST request body to the console
+  //console.log(urlDatabase);  // Log the POST request body to the console
   res.redirect(`/urls/${generatedUrl}`);
   // res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
@@ -80,14 +81,14 @@ app.post('/urls/:shortURL', (req, res)=>{
       urlDatabase[shortURL] = req.body.newURL
     ]
   }
-  console.log('url: ',urlDatabase)
+  //console.log('url: ',urlDatabase)
   res.redirect('/urls');
 })
 
 app.post(('/urls/:shortURL/delete'), (req, res)=>{
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
-  console.log('url: ',urlDatabase)
+  //console.log('url: ',urlDatabase)
   res.redirect('/urls');
 })
 
@@ -111,8 +112,16 @@ app.get('/register', (req, res)=>{
   res.render('urls_register', templateVars);
 });
 
+
+
 app.post('/register', (req, res)=>{
   const { email, password } = req.body;
+  if(email === '' || password === ''){
+    return res.status(400).send('Fields Are Required!');
+  }
+  if(emailLookup(users, email)){
+    return res.status(400).send('Email Exist!');
+  }
   const id = generateRandomString();
   users[id] = {
     id,
@@ -127,7 +136,3 @@ app.listen(PORT, ()=>{
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-function generateRandomString() {
-  let rand = Math.random().toString(36).substring(7, 1);
-  return rand;
-}
