@@ -4,6 +4,7 @@ const PORT = 8080;
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override');
 const { urlsForUser, getUserByEmail, generateRandomString } = require('./helpers');
 const saltRounds = 10;
 
@@ -11,8 +12,9 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1', 'key2']
+  keys: ['something1', 'something2']
 }));
+app.use(methodOverride('_method'))
 
 // Database
 const urlDatabase = {
@@ -134,7 +136,7 @@ app.post("/urls", (req, res) => {
 });
 
 //Edit URL
-app.post('/urls/:shortURL', (req, res)=>{
+app.put('/urls/:shortURL', (req, res)=>{
   const shortURL = req.params.shortURL;
   const userId = req.session['user_id'];
   if (!users[userId]) {
@@ -161,7 +163,8 @@ app.post('/urls/:shortURL', (req, res)=>{
   res.redirect('/urls');
 });
 
-app.post('/urls/:shortURL/delete', (req, res)=>{
+app.delete('/urls/:shortURL', (req, res)=>{
+  console.log('fsg')
   const userId = req.session['user_id'];
   const shortURL = req.params.shortURL;
   if (!users[userId]) {
